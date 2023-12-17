@@ -1,0 +1,187 @@
+clc
+clear all
+% close all
+format default
+hold on;
+m = 1000;
+tau = 0.005;
+trials = 100;
+mu = 0.2;
+dVec = [1,2,4,5,8,10,20,40,50,100,125,200,250,500,1000];
+BCC_data = {};
+delta = 1000;
+
+prompt = "Enter the number corresponding to the graph:" + newline + ...
+    "1. communications vs time" + newline + ...
+    "2. fraction completed vs average completion time" + newline + ...
+    "3. time vs average function completed" + newline + ...
+    "4. t vs probability of time>t (graph from research paper)" + newline + ...
+    "5. save data" + newline;
+plotType = input(prompt);
+if (plotType == 4 || plotType == 5)
+    d = 10;
+    Yvec = zeros(1,trials);
+    parfor j = 1:trials
+        [time,~,~,~] = BCC_subfunc(m,tau,mu,d,delta,plotType);
+        Yvec(j) = time;
+    end
+    [Ycdf,x] = cdfcalc(Yvec);
+    Yccdf = 1 - Ycdf(1:end-1);
+    semilogx(x,Yccdf);
+    xlim([0.1,100]);
+    if (plotType == 4)
+        return;
+    else
+        BCC_data = {"paper",x,Yccdf,-1,-1,-1,-1};
+    end
+end
+for i = 1:length(dVec)
+    d = dVec(i);
+    lengths = [];
+    if (plotType == 1)
+        Yvec = zeros(1,trials);
+        Cvec = zeros(1,trials);
+        parfor j = 1:trials
+            [time,~,~,comms] = BCC_subfunc(m,tau,mu,d,delta,plotType);
+            Yvec(j) = time;
+            Cvec(j) = comms;
+        end
+        YDvec = mean(Yvec);
+        commDVec = mean(Cvec);
+        addData = {string(d),commDVec,YDvec};
+        BCC_data = [BCC_data;addData];
+    elseif (plotType == 2)
+        frac = 0:m/d;
+        frac = frac / (m/d);
+        ACT = zeros(1,m/d+1);
+        parfor j = 1:trials
+            [~,CT,~,~] = BCC_subfunc(m,tau,mu,d,delta,plotType);
+            ACT = ACT + CT;
+        end
+        ACT = ACT / trials;
+        addData = {string(d),frac,ACT};
+        BCC_data = [BCC_data;addData];
+    elseif (plotType == 3)
+        tempFC = cell(trials,1);
+        parfor j = 1:trials
+            [~,~,FC,~] = BCC_subfunc(m,tau,mu,d,delta,plotType);
+            tempFC{j} = FC;
+            lengths = [lengths,length(FC)];
+        end
+        len = max(lengths);
+        AFC = zeros(1,len);
+        for j = 1:trials
+            for k = 1:len
+                if (k > lengths(j))
+                    AFC(k) = AFC(k) + 1;
+                else
+                    AFC(k) = AFC(k) + tempFC{j}(k);
+                end
+            end
+        end
+        Tvec = 0:len-1;
+        Tvec = Tvec / delta;
+        AFC = AFC / trials;
+        addData = {string(d),Tvec,AFC};
+        BCC_data = [BCC_data;addData];
+    elseif (plotType == 5)
+        Yvec = zeros(1,trials);
+        Cvec = zeros(1,trials);
+        frac = 0:m/d;
+        frac = frac / (m/d);
+        ACT = zeros(1,m/d+1);
+        tempFC = cell(trials,1);
+        parfor j = 1:trials
+            [time,CT,FC,comms] = BCC_subfunc(m,tau,mu,d,delta,plotType);
+            Yvec(j) = time;
+            Cvec(j) = comms;
+            ACT = ACT + CT;
+            tempFC{j} = FC;
+            lengths = [lengths,length(FC)];
+        end
+        YDvec = mean(Yvec);
+        commDVec = mean(Cvec);
+        ACT = ACT / trials;
+        len = max(lengths);
+        AFC = zeros(1,len);
+        for j = 1:trials
+            for k = 1:len
+                if (k > lengths(j))
+                    AFC(k) = AFC(k) + 1;
+                else
+                    AFC(k) = AFC(k) + tempFC{j}(k);
+                end
+            end
+        end
+        Tvec = 0:len-1;
+        Tvec = Tvec / delta;
+        AFC = AFC / trials;
+        addData = {string(d),commDVec,YDvec,frac,ACT,Tvec,AFC};
+        BCC_data = [BCC_data;addData];
+    end
+end
+if (plotType == 5)
+    save('BCC.mat','BCC_data');
+else
+    graph(plotType,BCC_data);
+end
+
+
+function [time,CT,FC,comms] = BCC_subfunc(m,tau,mu,d,delta,plotType)
+
+    % each worker completes all batches in random order take the fastest 
+    % completion time for each batch across workers take the max time of 
+    % all batches
+    
+    batches = m/d;
+    batchTimes = ones(1,batches) * inf;
+    initialTimes = zeros(1,m);
+    for worker = 1:m
+        workerTime = exprnd(1/mu);
+        initialTimes(m) = workerTime;
+    
+        % for each randomly selected batch, compute the total time at which 
+        % this worker will finish the batch, and record the minimum of this 
+        % time and the previously recorded batchTime of this batch
+    
+        I = 1:batches;
+        for batch = 1:batches
+            coupon = randsrc(1,1,I);
+            I = setdiff(I,coupon);
+            workerTime = workerTime + tau * d;
+            batchTimes(coupon) = min(batchTimes(coupon), workerTime);
+        end
+    end
+    CT = [];
+    FC = [];
+    if (plotType == 2 || plotType == 3 || plotType == 5)
+        CT = [0,sort(batchTimes)];
+        if (plotType == 3 || plotType == 5)
+            for i = 1:length(CT)-1
+                FC(floor(CT(i)*delta)+1 : floor(CT(i+1)*delta)) = (i-1)*d;
+            end
+            FC = [FC,i*d];
+            FC = FC / m;
+        end
+    end
+    time = max(batchTimes);
+    comms = 0;
+    if (plotType == 1 || plotType == 5)
+        for i = 1:m
+            comms = comms + floor((time - initialTimes(i)) / tau / d);
+        end
+        comms = comms / m;
+    end
+end
+
+function graph(input,data)
+    if (input == 1)
+        plot(cell2mat(data(:,2)),cell2mat(data(:,3)));
+    else
+        hold on;
+        for i = 1:size(data)
+            stairs(data{i,2},data{i,3});
+        end
+        legend(data{:,1});
+    end
+end

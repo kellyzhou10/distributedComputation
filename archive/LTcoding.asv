@@ -1,0 +1,61 @@
+clc
+clear all
+close all
+format default
+
+m = 1000;
+tau = 0.005;
+trials = 1;
+mu = 0.2;
+% c = 0.36
+% K = m
+% R = 79
+% delta = 0.95
+
+Yvec = [];
+for i = 1:trials
+    
+    % while the rank of encode is not m, for each worker, pick a random
+    % number d according to robust distribution of random fs to complete
+    % once every worker is used, repeat the process for another round,
+    % adding the times for the same worker across different rounds
+    % take the longest time out of all workers
+
+    encode = [];
+    workerTimes = zeros(1,m);
+    worker = 1;
+    prevRank = 0;
+    while (size(encode,1) <= m || rank(encode) ~= m)
+
+        % setting degree
+        d = randsrc(1,1,[1 2 3 4 5 6 7 8 9 10 11 12; ...
+            0.0790 0.0395 0.0263 0.0198 0.0158 0.0132 ...
+            0.0113 0.0099 0.0088 0.0079 0.0072 0.7613]);
+
+        % creating new row
+        I = 1:m;
+        symbol = zeros(1,m);
+        for counter = 1:d
+            f = randsrc(1,1,I);
+            I = setdiff(I,f);
+            symbol(f) = 1;
+        end
+
+        % updating time of worker and encode
+        workerTimes(worker) = workerTimes(worker) + exprnd(1/mu) + tau * d;
+        encode = [encode;symbol];
+
+        % updating worker counter
+        if (worker == m)
+            worker = 0;
+        end
+        worker = worker + 1;
+    end
+    Yvec = [Yvec,max(workerTimes)];
+    disp(max(workerTimes))
+end
+
+[Ycdf,x] = cdfcalc(Yvec);
+Yccdf = 1 - Ycdf(1:end-1);
+semilogx(x,Yccdf);
+xlim([0.1,100]);

@@ -1,0 +1,40 @@
+clc
+clear all
+close all
+format default
+
+m = 1000;
+tau = 0.005;
+trials = 400;
+muG = 0.4;
+muB = 0.2;
+pG = 0;
+p = m;
+comms = 0;
+
+Yvec = [];
+parfor i = 1:trials
+    workerTimes = 0;
+
+    % calculate time for each worker to complete their f, take max time
+    for worker = 1:p
+        if (rand < pG)
+            mu = muG;
+        else
+            mu = muB;
+        end
+        workerTimes = max(workerTimes, exprnd(1/mu) + tau * m / p);
+        comms = comms + 1;
+    end
+    Yvec = [Yvec,workerTimes];
+end
+
+dis
+
+[Ycdf,x] = cdfcalc(Yvec);
+Yccdf = 1 - Ycdf(1:end-1);
+save('uncoded.mat','Yccdf','x');
+xlim([0.1,100]);
+xlabel('t');
+ylabel('Pr(T>t)');
+semilogx(x,Yccdf);

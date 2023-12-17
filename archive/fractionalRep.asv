@@ -1,0 +1,33 @@
+clc
+clear all
+close all
+format default
+
+m = 1000;
+tau = 0.005;
+trials = 100;
+mu = 0.2;
+d = 10;
+p = m;
+
+Yvec = [];
+groupTimes = zeros(1,m/d);
+for i = 1:trials
+
+    % take the max time out of all groups of d fs
+    for group = 1:m/d
+
+        % take the time for the fastest worker in each group
+        Ysub = 1000;
+        for worker = 1:p/m*d
+            Ysub = min(Ysub, exprnd(1/mu) + tau * d);
+        end
+        groupTimes(group) = Ysub;
+    end
+    Yvec = [Yvec,max(groupTimes)];
+end
+
+[Ycdf,x] = cdfcalc(Yvec);
+Yccdf = 1 - Ycdf(1:end-1);
+semilogx(x,Yccdf);
+xlim([0.1,100]);

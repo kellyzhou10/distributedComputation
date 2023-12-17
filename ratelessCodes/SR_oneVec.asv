@@ -1,0 +1,96 @@
+clc
+clear all
+close all
+format default
+
+m = 1000;
+tau = 0.005;
+trials = 1;
+dVec = [1,2,4,5,8,10,20,40,50,100,125,200,250,500,1000];
+mu = 0.2;
+
+YDvec = zeros(1,length(dVec));
+commDVec = zeros(1,length(dVec));
+for i = 1:length(dVec)
+    d = dVec(i);
+    Yvec = zeros(1,trials);
+    commVec = zeros(1,trials);
+    for j = 1:trials
+        [time,comms] = SR_subfunc(m,tau,d,mu);
+        Yvec(j) = time;
+        commVec(j) = (comms/m);
+    end
+    YDvec(i) = mean(Yvec);
+    commDVec(i) = mean(commVec);
+end
+
+plot(commDVec,YDvec)
+
+[Ycdf,x] = cdfcalc(Yvec);
+Yccdf = 1 - Ycdf(1:end-1);
+%save('SR.mat','Yccdf','x');
+
+function [time,comms] = SR_subfunc(m,tau,d,mu)
+
+    % for each worker, generate the times to compute each symbol, then
+    % generate a row for each symbol using the fastest workers, adding to
+    % the matrix until it is solvable
+    
+    comms = 0;
+    encode = [];
+    workerTimes = zeros(m,1);
+    
+    % setting time of computation for each worker; first computation is a
+    % source symbol
+    for worker = 1:m
+        workerTimes(worker,1) = exprnd(1/mu) + tau;
+    end
+    MIN = min(workerTimes);
+    MAX = max(workerTimes);
+    while (MIN < MAX)
+        temp = zeros(m,1);
+        for worker = 1:m
+            temp(worker,1) = tau * d + workerTimes(worker,end);
+        end
+        workerTimes = [workerTimes,temp];
+        MIN = min(temp);
+    end
+    
+    % while matrix is unsolvable, generate encoded symbols corresponding to 
+    % the generated times
+    j = 0;
+    temp = [ones(m,1),workerTimes(:,1)];
+    prevRank = 0;
+    onesVec = ones(1,m);
+    allOnes = false;
+    while (~allOnes)
+        [time,worker] = min(temp(:,2));
+    
+        % create new row for every symbol; each worker's first is a source
+        % symbol, all others are encoded
+        symbol = zeros(1,m);
+        if (temp(worker,1) == 1)
+            symbol(worker) = 1;
+        else
+            I = 1:m;
+            I = setdiff(I,worker);
+            for counter = 1:d
+                f = randsrc(1,1,I);
+                I = setdiff(I,f);
+                symbol(f) = 1;
+            end
+        end
+        curRank = rank([encode;symbol]);
+        if (curRank > prevRank)
+            comms = comms + 1;
+            prevRank = curRank;
+            encode = [encode;symbol];
+            if (rank([encode;onesVec]) == curRank)
+                allOnes = true;
+            end
+        end
+        temp(worker,1) = temp(worker,1) + 1;
+        temp(worker,2) = workerTimes(worker,temp(worker,1));
+        j = j + 1;
+    end
+end
