@@ -2,8 +2,8 @@
 
 ## Description
 folders:
-  regularCodes - holds all paper-based codes:
-    allAtOne - m workers each compute m functions together, take the time from the fastest worker
+regularCodes - holds all paper-based codes:
+  allAtOne - m workers each compute m functions together, take the time from the fastest worker
     uncoded - m workers each compute one function, take the time for all functions to be computed
     FR - there are m/d groups and in each group, d workers each compute d functions and take the time from the fastest worker of each group
     LT - m workers each compute me/m encoded symbols, take the time for all functions to be recoverable (when rank is equal to m)
