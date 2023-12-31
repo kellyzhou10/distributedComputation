@@ -3,11 +3,13 @@ clear all
 close all
 format default
 
-m = 1000;
+% m = 1000;
+% dVec = [1,2,4,5,8,10,20,40,50,100,125,200,250,500,1000];
+m = 30;
+dVec = [1,2,3,5,6,10,30];
 tau = 0.005;
 trials = 100;
 mu = 0.2;
-dVec = [1,2,4,5,8,10,20,40,50,100,125,200,250,500,1000];
 FR_rand_data = {};
 delta = 1000;
 
@@ -22,13 +24,16 @@ if (plotType == 4 || plotType == 5)
     d = 10;
     Yvec = zeros(1,trials);
     parfor j = 1:trials
-        [time,~,~,~] = FR_rand_subfunc(m,tau,mu,d,delta,plotType);
+        [time,~,~,comms] = FR_rand_subfunc(m,tau,mu,d,delta,plotType);
         Yvec(j) = time;
+        Cvec(j) = comms;
     end
     [Ycdf,x] = cdfcalc(Yvec);
     Yccdf = 1 - Ycdf(1:end-1);
     semilogx(x,Yccdf);
     xlim([0.1,100]);
+    figure;
+    plot()
     if (plotType == 4)
         return;
     else
@@ -121,7 +126,7 @@ for i = 1:length(dVec)
     end
 end
 if (plotType == 5)
-    save('FR_rand.mat','FR_rand_data');
+    % save('FR_rand_smallm.mat');
 else
     graph(plotType,FR_rand_data);
 end

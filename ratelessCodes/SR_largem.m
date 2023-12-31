@@ -5,7 +5,7 @@ format default
 
 m = 1000;
 tau = 0.005;
-trials = 1;
+trials = 100;
 mu = 0.2;
 dVec = [1,2,4,5,8,10,20,40,50,100,125,200,250,500,999]; % best not to choose d = m
 SR_largem_data = {};

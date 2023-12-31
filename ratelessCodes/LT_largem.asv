@@ -5,7 +5,7 @@ format default
 
 m = 1000;
 tau = 0.005;
-trials = 1;
+trials = 100;
 mu = 0.2;
 dVec = [1,2,4,5,8,10,20,40,50,100,125,200,250,500,1000];
 LT_largem_data = {};
@@ -19,7 +19,7 @@ plotType = input(prompt);
 if (plotType == 2 || plotType == 3)
     d = 10;
     Yvec = zeros(1,trials);
-    for j = 1:trials
+    parfor j = 1:trials
         [time,~] = LT_largem_subfunc(m,tau,mu,d);
         Yvec(j) = time;
     end
@@ -37,7 +37,7 @@ for i = 1:length(dVec)
     d = dVec(i);
     Yvec = zeros(1,trials);
     Cvec = zeros(1,trials);
-    for j = 1:trials
+    parfor j = 1:trials
         [time,comms] = LT_largem_subfunc(m,tau,mu,d);
         Yvec(j) = time;
         Cvec(j) = comms;
@@ -101,10 +101,10 @@ function [time,comms] = LT_largem_subfunc(m,tau,mu,d)
     comms = 0;
     encode = [];
     workerTimes = zeros(m,2);
+    [deg_vec,p_vec,~] = RobustSolitonDistribution(m,d);
     for worker = 1:m
 
         % setting degree and time of computation
-        [deg_vec,p_vec,~] = RobustSolitonDistribution(m,d);
         deg = randsrc(1,1,[deg_vec; p_vec]);
         workerTimes(worker,1) = deg;
         workerTimes(worker,2) = exprnd(1/mu) + tau * deg;
@@ -121,7 +121,6 @@ function [time,comms] = LT_largem_subfunc(m,tau,mu,d)
         for worker = 1:m
 
             % setting degree and time of computation
-            [deg_vec,p_vec,~] = RobustSolitonDistribution(m,d);
             deg = randsrc(1,1,[deg_vec; p_vec]);
             tempTimes(worker,1) = deg;
             tempTimes(worker,2) = tau * deg + workerTimes(round*m+worker,2);

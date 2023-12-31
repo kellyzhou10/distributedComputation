@@ -1,8 +1,8 @@
 clc
 clear all
-% close all
+close all
 format default
-hold on;
+
 m = 1000;
 tau = 0.005;
 trials = 100;
@@ -48,7 +48,7 @@ for i = 1:length(dVec)
     LT_largem_data = [LT_largem_data;addData];
 end
 if (plotType == 3)
-    save('LT_largem.mat','LT_largem_data');
+    save('LT_largem.mat');
 else
     graph(plotType,LT_largem_data);
 end

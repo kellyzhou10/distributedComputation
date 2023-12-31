@@ -1,14 +1,13 @@
 clc
 clear all
-% close all
+close all
 format default
-hold on;
+
 m = 30;
 tau = 0.005;
-trials = 40;
+trials = 100;
 mu = 0.2;
 dVec = [1,2,3,5,6,10,29]; % best not to choose d = m
-dVec = [5];
 SR_smallm_data = {};
 delta = 1000;
 

@@ -5,10 +5,9 @@ format default
 
 m = 30;
 tau = 0.005;
-trials = 8;
+trials = 100;
 mu = 0.2;
 dVec = [1,2,3,5,6,10,30];
-dVec = [5];
 LT_smallm_data = {};
 delta = 1000;
 

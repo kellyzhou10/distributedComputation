@@ -2,13 +2,11 @@ clc
 clear all
 close all
 
-load('FR_RR.mat');
-load('FR_rand.mat');
-load('BCC.mat');
+load('FR_RR_largem.mat');
+load('FR_rand_largem.mat');
+load('BCC_largem.mat');
 load('LT_largem.mat');
 load('SR_largem.mat');
-load('LT_smallm.mat');
-load('SR_smallm.mat');
 
 prompt = "Enter the number corresponding to the graph:" + newline + ...
     "1. communications vs time" + newline + ...
@@ -17,9 +15,9 @@ prompt = "Enter the number corresponding to the graph:" + newline + ...
     "4. t vs probability of time>t (graph from research paper)" + newline;
 plotType = input(prompt);
 if (plotType == 1)
-    hold on;
     I = 2:16;
     plot(cell2mat(FR_RR_data(I,2)),cell2mat(FR_RR_data(I,3)),'*');
+    hold on;
     plot(cell2mat(FR_rand_data(I,2)),cell2mat(FR_rand_data(I,3)),'*');
     plot(cell2mat(BCC_data(I,2)),cell2mat(BCC_data(I,3)),'*');
     plot(cell2mat(LT_largem_data(I,2)),cell2mat(LT_largem_data(I,3)),'*');
@@ -37,6 +35,11 @@ elseif (plotType == 4)
     xlabel('t');
     ylabel('Pr(T>t)');
 else
+    load('FR_RR_smallm.mat');
+    load('FR_rand_smallm.mat');
+    load('BCC_smallm.mat');
+    load('LT_smallm.mat');
+    load('SR_smallm.mat');
     prompt = "Select d in: [1,2,4,5,8,10,20,40,50,100,125,200,250,500,1000]" + newline;
     d = input(prompt);
     for i = 1:length(FR_rand_data)
@@ -59,5 +62,7 @@ else
     stairs(FR_RR_data{i,x},FR_RR_data{i,y});
     stairs(FR_rand_data{i,x},FR_rand_data{i,y});
     stairs(BCC_data{i,x},BCC_data{i,y});
+    stairs(LT_smallm_data{i,x},LT_smallm_data{i,y});
+    stairs(SR_smallm_data{i,x},SR_smallm_data{i,y});
 end
 legend('FR RR','FR rand','BCC','LT','SR');

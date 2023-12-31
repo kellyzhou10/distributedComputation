@@ -1,13 +1,15 @@
 clc
 clear all
-% close all
+close all
 format default
-hold on;
+
 m = 1000;
+dVec = [1,2,4,5,8,10,20,40,50,100,125,200,250,500,1000];
+% m = 30;
+% dVec = [1,2,3,5,6,10,30];
 tau = 0.005;
 trials = 100;
 mu = 0.2;
-dVec = [1,2,4,5,8,10,20,40,50,100,125,200,250,500,1000];
 FR_RR_data = {};
 delta = 1000;
 
@@ -121,7 +123,7 @@ for i = 1:length(dVec)
     end
 end
 if (plotType == 5)
-    save('FR_RR.mat','FR_RR_data');
+    % save('FR_RR_largem.mat');
 else
     graph(plotType,FR_RR_data);
 end

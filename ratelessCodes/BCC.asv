@@ -4,10 +4,12 @@ close all
 format default
 
 m = 1000;
-tau = 0.005;
-trials = 4;
-mu = 0.2;
 dVec = [1,2,4,5,8,10,20,40,50,100,125,200,250,500,1000];
+% m = 30;
+% dVec = [1,2,3,5,6,10,30];
+tau = 0.005;
+trials = 100;
+mu = 0.2;
 BCC_data = {};
 delta = 1000;
 
@@ -72,7 +74,7 @@ for i = 1:length(dVec)
         AFC = zeros(1,len);
         for j = 1:trials
             for k = 1:len
-                if k > lengths(j)
+                if (k > lengths(j))
                     AFC(k) = AFC(k) + 1;
                 else
                     AFC(k) = AFC(k) + tempFC{j}(k);
@@ -106,7 +108,7 @@ for i = 1:length(dVec)
         AFC = zeros(1,len);
         for j = 1:trials
             for k = 1:len
-                if k > lengths(j)
+                if (k > lengths(j))
                     AFC(k) = AFC(k) + 1;
                 else
                     AFC(k) = AFC(k) + tempFC{j}(k);
@@ -120,9 +122,10 @@ for i = 1:length(dVec)
         BCC_data = [BCC_data;addData];
     end
 end
-graph(plotType,BCC_data);
 if (plotType == 5)
-    save('BCC.mat','BCC_data');
+    % save('BCC_largem.mat');
+else
+    graph(plotType,BCC_data);
 end
 
 
@@ -176,8 +179,6 @@ end
 function graph(input,data)
     if (input == 1)
         plot(cell2mat(data(:,2)),cell2mat(data(:,3)));
-    elseif (input == 5)
-        return;
     else
         hold on;
         for i = 1:size(data)
