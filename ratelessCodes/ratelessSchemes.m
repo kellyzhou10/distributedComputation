@@ -8,23 +8,23 @@ load('BCC_largem.mat');
 load('LT_largem.mat');
 load('SR_largem.mat');
 
-prompt = "Enter the number corresponding to the graph:" + newline + ...
+prompt1 = "Enter the number corresponding to the graph:" + newline + ...
     "1. communications vs time" + newline + ...
     "2. fraction completed vs average completion time" + newline + ...
     "3. time vs average function completed" + newline + ...
     "4. t vs probability of time>t (graph from research paper)" + newline;
-plotType = input(prompt);
-if (plotType == 1)
+graphType = input(prompt1);
+if (graphType == 1)
     I = 2:16;
-    plot(cell2mat(FR_RR_data(I,2)),cell2mat(FR_RR_data(I,3)),'*');
+    plot(cell2mat(FR_RR_data(I,2)),cell2mat(FR_RR_data(I,3)));
     hold on;
-    plot(cell2mat(FR_rand_data(I,2)),cell2mat(FR_rand_data(I,3)),'*');
-    plot(cell2mat(BCC_data(I,2)),cell2mat(BCC_data(I,3)),'*');
-    plot(cell2mat(LT_largem_data(I,2)),cell2mat(LT_largem_data(I,3)),'*');
-    plot(cell2mat(SR_largem_data(I,2)),cell2mat(SR_largem_data(I,3)),'*');
+    plot(cell2mat(FR_rand_data(I,2)),cell2mat(FR_rand_data(I,3)));
+    plot(cell2mat(BCC_data(I,2)),cell2mat(BCC_data(I,3)));
+    plot(cell2mat(LT_largem_data(I,2)),cell2mat(LT_largem_data(I,3)));
+    plot(cell2mat(SR_largem_data(I,2)),cell2mat(SR_largem_data(I,3)));
     xlabel('avg comms/worker');
     ylabel('time to complete m functions');
-elseif (plotType == 4)
+elseif (graphType == 4)
     semilogx(FR_RR_data{1,2},FR_RR_data{1,3});
     hold on;
     semilogx(FR_rand_data{1,2},FR_rand_data{1,3});
@@ -40,14 +40,14 @@ else
     load('BCC_smallm.mat');
     load('LT_smallm.mat');
     load('SR_smallm.mat');
-    prompt = "Select d in: [1,2,4,5,8,10,20,40,50,100,125,200,250,500,1000]" + newline;
-    d = input(prompt);
+    prompt2 = "Select d in: [1,2,3,5,6,10,30];" + newline;
+    d = input(prompt2);
     for i = 1:length(FR_rand_data)
         if (str2num(FR_rand_data{i,1}) == d)
             break;
         end
     end
-    if (plotType == 2)
+    if (graphType == 2)
         x = 4;
         y = 5;
         xlabel('fraction completed');

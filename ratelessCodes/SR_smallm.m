@@ -258,11 +258,20 @@ end
 function graph(input,data)
     if (input == 1)
         plot(cell2mat(data(:,2)),cell2mat(data(:,3)));
+        xlabel('avg comms/worker');
+        ylabel('time to complete m functions');
     else
         hold on;
         for i = 1:size(data)
             stairs(data{i,2},data{i,3});
         end
         legend(data{:,1});
+        if (input == 2)
+            xlabel('fraction completed');
+            ylabel('average completion time');
+        else
+            xlabel('time');
+            ylabel('average fraction completed');
+        end
     end
 end

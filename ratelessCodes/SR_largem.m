@@ -20,13 +20,22 @@ if (plotType == 2 || plotType == 3)
     d = 10;
     Yvec = zeros(1,trials);
     parfor j = 1:trials
-        [time,~] = SR_largem_subfunc(m,tau,mu,d);
+        [time,comms] = SR_largem_subfunc(m,tau,mu,d);
         Yvec(j) = time;
+        Cvec(j) = comms;
     end
     [Ycdf,x] = cdfcalc(Yvec);
     Yccdf = 1 - Ycdf(1:end-1);
     semilogx(x,Yccdf);
     xlim([0.1,100]);
+    xlabel('t');
+    ylabel('Pr(T>t)');
+    figure;
+    [Ccdf,y] = cdfcalc(Cvec);
+    Cccdf = 1 - Ccdf(1:end-1);
+    plot(y,Cccdf);
+    xlabel('c');
+    ylabel('Pr(C>c)');
     if (plotType == 2)
         return;
     else
@@ -133,11 +142,20 @@ end
 function graph(input,data)
     if (input == 1)
         plot(cell2mat(data(:,2)),cell2mat(data(:,3)));
+        xlabel('avg comms/worker');
+        ylabel('time to complete m functions');
     else
         hold on;
         for i = 1:size(data)
             stairs(data{i,2},data{i,3});
         end
         legend(data{:,1});
+        if (input == 2)
+            xlabel('fraction completed');
+            ylabel('average completion time');
+        else
+            xlabel('time');
+            ylabel('average fraction completed');
+        end
     end
 end

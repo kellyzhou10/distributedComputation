@@ -3,10 +3,10 @@ clear all
 close all
 format default
 
-% m = 1000;
-% dVec = [1,2,4,5,8,10,20,40,50,100,125,200,250,500,1000];
-m = 30;
-dVec = [1,2,3,5,6,10,30];
+m = 1000;
+dVec = [1,2,4,5,8,10,20,40,50,100,125,200,250,500,1000];
+% m = 30;
+% dVec = [1,2,3,5,6,10,30];
 tau = 0.005;
 trials = 100;
 mu = 0.2;
@@ -32,8 +32,14 @@ if (plotType == 4 || plotType == 5)
     Yccdf = 1 - Ycdf(1:end-1);
     semilogx(x,Yccdf);
     xlim([0.1,100]);
+    xlabel('t');
+    ylabel('Pr(T>t)');
     figure;
-    plot()
+    [Ccdf,y] = cdfcalc(Cvec);
+    Cccdf = 1 - Ccdf(1:end-1);
+    plot(y,Cccdf);
+    xlabel('c');
+    ylabel('Pr(C>c)');
     if (plotType == 4)
         return;
     else
@@ -176,7 +182,7 @@ function [time,CT,FC,comms] = FR_rand_subfunc(m,tau,mu,d,delta,plotType)
     end
     time = max(groupTimes);
     comms = 0;
-    if (plotType == 1 || plotType == 5)
+    if (plotType == 1 || plotType == 4 || plotType == 5)
         for i = 1:m
             comms = comms + floor((time - initialTimes(i)) / tau / d);
         end
@@ -187,11 +193,20 @@ end
 function graph(input,data)
     if (input == 1)
         plot(cell2mat(data(:,2)),cell2mat(data(:,3)));
+        xlabel('avg comms/worker');
+        ylabel('time to complete m functions');
     else
         hold on;
         for i = 1:size(data)
             stairs(data{i,2},data{i,3});
         end
         legend(data{:,1});
+        if (input == 2)
+            xlabel('fraction completed');
+            ylabel('average completion time');
+        else
+            xlabel('time');
+            ylabel('average fraction completed');
+        end
     end
 end
